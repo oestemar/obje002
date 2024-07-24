@@ -1,1 +1,3 @@
-C# practice of objectmotion
+C# practice of motionObject
+
+platform: Visual Studio
