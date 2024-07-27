@@ -21,6 +21,9 @@ namespace obje002
 
         Random rand = new Random();
 
+        //円に関する変数
+        //variablename about circles
+
         int[] _circlesizes;
         Rectangle[] _circlerects;
         Point[] _circlexys;
@@ -29,6 +32,9 @@ namespace obje002
         vector[] _circlevecs;
         int circlenum;
 
+        //×に関する変数
+        //variablename about Xs
+
         List<PointF[]> _xs;
         int[] _xsizes;
         Point[] _xcenters;
@@ -36,11 +42,13 @@ namespace obje002
         SolidBrush[] _xbrushes;
         vector[] _xvecs;
         int xnum;
-        int hexnum;
         int[] _xangles;
         int[] _xinclementangles;
 
         Boolean ssflag = false;
+
+        //多角形に関する変数
+        //variable about polygons
 
         List<PointF[]> _polygonsA;
         int[] _polygonsizesA;
@@ -66,12 +74,37 @@ namespace obje002
 
         int motionnumber;
 
+        //北極星を中心にした回転用の変数
+        //for polarrotate 
+
+        Point polarxy;
+
+        float[] _polaranglesC;
+        float[] _polaranglesIC;
+        float[] _polarsidesC;
+
+        float[] _polaranglesX;
+        float[] _polaranglesIX;
+        float[] _polarsidesX;
+
+        float[] _polaranglesPA;
+        float[] _polaranglesIPA;
+        float[] _polarsidesPA;
+
+        float[] _polaranglesPB;
+        float[] _polaranglesIPB;
+        float[] _polarsidesPB;
+
+        Boolean polarflag = false;
+        SolidBrush polarcolor;
+
         public Form1()
         {
             InitializeComponent();
         }
 
-
+        //　フォーム1をロードしたときの各種初期値設定
+        // initialize values at form1 loading
         private void Form1_Load(object sender, EventArgs e)
         {
             _bitmap = new Bitmap(pic.Width, pic.Height);
@@ -83,12 +116,17 @@ namespace obje002
             comboBox6.SelectedIndex = 0;
             comboBox7.SelectedIndex = 0;
 
+            polarxy = new Point(pic.Width / 2, pic.Height / 2);
+
             initializeCircles();
             initializeXs();
             initializePolygonsA();
             initializePolygonsB();
 
         }
+
+        //　円の初期値
+        // initialize values about circles
         private void initializeCircles()
         {
             _circlexys = new Point[circlenum];
@@ -97,11 +135,15 @@ namespace obje002
             _circlepens = new Pen[circlenum];
             _circlebrushes = new SolidBrush[circlenum];
             _circlevecs = new vector[circlenum];
+            
+            _polaranglesC = new float[circlenum];
+            _polaranglesIC = new float[circlenum];
+            _polarsidesC = new float[circlenum];
 
             for (int i = 0; i < circlenum; i++)
             {
                 _circlesizes[i] = rand.Next(15, 40);
-                _circlexys[i] = new Point(rand.Next(50, 450), rand.Next(50, 250));
+                _circlexys[i] = xy(rand);
 
                 _circlerects[i] = new Rectangle(_circlexys[i].X, _circlexys[i].Y, _circlesizes[i], _circlesizes[i]);
 
@@ -109,9 +151,14 @@ namespace obje002
                 _circlepens[i] = pen(rand);
                 _circlebrushes[i] = solidbrush(rand);
 
+                _polaranglesC[i] = getstartangle(_circlexys[i].X - polarxy.X, _circlexys[i].Y - polarxy.Y);
+                _polaranglesIC[i] = (float)rand.Next(10, 50) / 50;
+                _polarsidesC[i] = getsides(_circlexys[i]);
             }
         }
 
+        //　Xの初期値
+        // initialize values about Xs
         private void initializeXs()
         {
             _xcenters = new Point[xnum];
@@ -123,10 +170,14 @@ namespace obje002
             _xinclementangles = new int[xnum];
             _xangles = new int[xnum];
 
+            _polaranglesX = new float[xnum];
+            _polaranglesIX = new float[xnum];
+            _polarsidesX = new float[xnum];
+
             for (int i = 0; i < xnum; i++)
             {
                 _xsizes[i] = rand.Next(15, 40);
-                _xcenters[i] = new Point(rand.Next(50, 450), rand.Next(50, 250));
+                _xcenters[i] = xy(rand);
                 PointF[] _x = new PointF[4];
                 _x[0] = new PointF(_xcenters[i].X + _xsizes[i] * (float)Math.Cos(45 * Math.PI / 180), _xcenters[i].Y + _xsizes[i] * (float)Math.Sin(45 * Math.PI / 180));
                 _x[1] = new PointF(_xcenters[i].X + _xsizes[i] * (float)Math.Cos(135 * Math.PI / 180), _xcenters[i].Y + _xsizes[i] * (float)Math.Sin(135 * Math.PI / 180));
@@ -141,9 +192,14 @@ namespace obje002
                 _xpens[i] = pen(rand);
                 _xbrushes[i] = solidbrush(rand);
 
+                _polaranglesX[i] = getstartangle(_xcenters[i].X - polarxy.X, _xcenters[i].Y - polarxy.Y);
+                _polaranglesIX[i] = (float)rand.Next(10, 50) / 50;
+                _polarsidesX[i] = getsides(_xcenters[i]); ;
             }
         }
 
+        //　多角形Aの初期値
+        // initialize values about polygonsA
         private void initializePolygonsA()
         {
             _polygoncentersA = new Point[polygonnumA];
@@ -155,10 +211,14 @@ namespace obje002
             _polygonanglesA = new int[polygonnumA];
             _polygoninclementanglesA = new int[polygonnumA];
 
+            _polaranglesPA = new float[polygonnumA];
+            _polaranglesIPA = new float[polygonnumA];
+            _polarsidesPA = new float[polygonnumA];
+
             for (int i = 0; i < polygonnumA; i++)
             {
                 _polygonsizesA[i] = rand.Next(15, 40);
-                _polygoncentersA[i] = new Point(rand.Next(50, 450), rand.Next(50, 250));
+                _polygoncentersA[i] = xy(rand);
                 PointF[] _p = new PointF[vertexA];
                 for (int j = 0; j < vertexA; j++)
                 {
@@ -172,8 +232,15 @@ namespace obje002
                 _polygoninclementanglesA[i] = rand.Next(5, 30);
                 _polygonpensA[i] = pen(rand);
                 _polygonbrushesA[i] = solidbrush(rand);
+
+                _polaranglesPA[i] = getstartangle(_polygoncentersA[i].X - polarxy.X, _polygoncentersA[i].Y - polarxy.Y);
+                _polaranglesIPA[i] = (float)rand.Next(10, 50) / 50;
+                _polarsidesPA[i] = getsides(_polygoncentersA[i]);
             }
         }
+
+        //　多角形Bの初期値
+        // initialize values about polygonsB
 
         private void initializePolygonsB()
         {
@@ -186,10 +253,14 @@ namespace obje002
             _polygonanglesB = new int[polygonnumB];
             _polygoninclementanglesB = new int[polygonnumB];
 
+            _polaranglesPB = new float[polygonnumB];
+            _polaranglesIPB = new float[polygonnumB];
+            _polarsidesPB = new float[polygonnumB];
+
             for (int i = 0; i < polygonnumB; i++)
             {
                 _polygonsizesB[i] = rand.Next(15, 40);
-                _polygoncentersB[i] = new Point(rand.Next(50, 450), rand.Next(50, 250));
+                _polygoncentersB[i] = xy(rand);
                 PointF[] _p = new PointF[vertexB];
                 for (int j = 0; j < vertexB; j++)
                 {
@@ -204,15 +275,27 @@ namespace obje002
                 _polygonpensB[i] = pen(rand);
                 _polygonbrushesB[i] = solidbrush(rand);
 
+                _polaranglesPB[i] = getstartangle(_polygoncentersB[i].X - polarxy.X, _polygoncentersB[i].Y - polarxy.Y);
+                _polaranglesIPB[i] = (float)rand.Next(10, 50) / 50;
+                _polarsidesPB[i] = getsides(_polygoncentersB[i]); ;
+
             }
 
         }
 
+        //　各種図形の一斉描画
+        // drawing on every objects
         private void drawObjects()
         {
             using (Graphics g = Graphics.FromImage(_bitmap))
             {
                 g.Clear(Color.Teal);
+
+                if (polarflag)
+                {
+                    polarcolor = new SolidBrush(Color.FromArgb(250, 250, 200));
+                    g.FillEllipse(polarcolor, polarxy.X, polarxy.Y, 10, 10);
+                }
 
                 for (int i = 0; i < circlenum; i++)
                 {
@@ -279,6 +362,8 @@ namespace obje002
             }
         }
 
+        //　円を動かす
+        // each motions of circles
         private void moveCircles()
         {
             switch (motionnumber)
@@ -368,12 +453,28 @@ namespace obje002
                         }
                     }
                     break;
+                case 5:
+                    for (int i = 0; i < circlenum; i++)
+                    {
+                        _polaranglesC[i] += _polaranglesIC[i];
+                        
+                        if (_polaranglesC[i] > 360)
+                        {
+                            _polaranglesC[i] = 0;
+                        }
+
+                        _circlexys[i].X = (int)(polarxy.X + _polarsidesC[i] * (float)Math.Cos(_polaranglesC[i] * Math.PI / 180));
+                        _circlexys[i].Y = (int)(polarxy.Y + _polarsidesC[i] * (float)Math.Sin(_polaranglesC[i] * Math.PI / 180));
+                    }
+                    break;
                 default:
                     break;
 
             }
         }
-    
+
+        //　Xを動かす
+        // each motions of Xs
 
         private void moveXs()
         {
@@ -495,10 +596,34 @@ namespace obje002
                         }
                     }
                     break;
+                case 5:
+                    for (int i = 0; i < xnum; i++)
+                    {
+                        _xangles[i] += _xinclementangles[i];
+
+                        if (_xangles[i] > 360)
+                        {
+                            _xangles[i] -= 360;
+                        }
+
+                        _polaranglesX[i] += _polaranglesIX[i];
+
+                        if (_polaranglesX[i] > 360)
+                        {
+                            _polaranglesX[i] = 0;
+                        }
+
+                        _xcenters[i].X = (int)(polarxy.X + _polarsidesX[i] * (float)Math.Cos(_polaranglesX[i] * Math.PI / 180));
+                        _xcenters[i].Y = (int)(polarxy.Y + _polarsidesX[i] * (float)Math.Sin(_polaranglesX[i] * Math.PI / 180));
+                    }
+                    break;
                 default:
                     break;
             }
         }
+
+        //　多角形Aを動かす
+        // each motions of polygonsA
 
         private void movePolygonsA()
         {
@@ -620,10 +745,34 @@ namespace obje002
                         }
                     }
                     break;
+                case 5:
+                    for (int i = 0; i < polygonnumA; i++)
+                    {
+                        _polygonanglesA[i] += _polygoninclementanglesA[i];
+
+                        if (_polygonanglesA[i] > 360)
+                        {
+                            _polygonanglesA[i] -= 360;
+                        }
+
+                        _polaranglesPA[i] += _polaranglesIPA[i];
+
+                        if (_polaranglesPA[i] > 360)
+                        {
+                            _polaranglesPA[i] = 0;
+                        }
+
+                        _polygoncentersA[i].X = (int)(polarxy.X + _polarsidesPA[i] * (float)Math.Cos(_polaranglesPA[i] * Math.PI / 180));
+                        _polygoncentersA[i].Y = (int)(polarxy.Y + _polarsidesPA[i] * (float)Math.Sin(_polaranglesPA[i] * Math.PI / 180));
+                    }
+                    break;
                 default:
                     break;
             }
         }
+
+        //　多角形Bを動かす
+        // each motions of polygonsB
 
         private void movePolygonsB()
         {
@@ -745,11 +894,35 @@ namespace obje002
                         }
                     }
                     break;
-                default:
+                case 5:
+                    for (int i = 0; i < polygonnumB; i++)
+                    {
+                        _polygonanglesB[i] += _polygoninclementanglesB[i];
+
+                        if (_polygonanglesB[i] > 360)
+                        {
+                            _polygonanglesB[i] -= 360;
+                        }
+
+                        _polaranglesPB[i] += _polaranglesIPB[i];
+
+                        if (_polaranglesPB[i] > 360)
+                        {
+                            _polaranglesPB[i] = 0;
+                        }
+
+                        _polygoncentersB[i].X = (int)(polarxy.X + _polarsidesPB[i] * (float)Math.Cos(_polaranglesPB[i] * Math.PI / 180));
+                        _polygoncentersB[i].Y = (int)(polarxy.Y + _polarsidesPB[i] * (float)Math.Sin(_polaranglesPB[i] * Math.PI / 180));
+                    }
                     break;
 
+                default:
+                    break;
             }
         }
+
+        // ベクタークラス設置
+        // vector class 
 
         class vector
         {
@@ -764,6 +937,9 @@ namespace obje002
 
         }
 
+        //　Drawボタン
+        //　about draw button
+
         private void button1_Click(object sender, EventArgs e)
         {
             initializeCircles();
@@ -773,35 +949,79 @@ namespace obje002
             drawObjects();
         }
 
-
+        //　タイマー設定
+        //　about timer1 
 
         private void timer1_Tick(object sender, EventArgs e)
-        {
-            moveCircles();
-            moveXs();
-            movePolygonsA();
-            movePolygonsB();
-            drawObjects();
+        {   
+                moveCircles();
+                moveXs();
+                movePolygonsA();
+                movePolygonsB();
+                drawObjects();
         }
+
+        //　Stsrt/Stopボタン
+        //　start/stop button
 
         private void button2_Click(object sender, EventArgs e)
         {
+            for (int i = 0; i < circlenum; i++)
+            {
+                _polaranglesC[i] = getstartangle(_circlexys[i].X - polarxy.X, _circlexys[i].Y - polarxy.Y);
+                _polarsidesC[i] = getsides(_circlexys[i]);
+            }
+            
+            for (int i = 0; i < xnum; i++)
+            {
+                _polaranglesX[i] = getstartangle(_xcenters[i].X - polarxy.X, _xcenters[i].Y - polarxy.Y);
+                _polarsidesX[i] = getsides(_xcenters[i]);
+            }
+            
+            for (int i = 0; i < polygonnumA; i++)
+            {
+                _polaranglesPA[i] = getstartangle(_polygoncentersA[i].X - polarxy.X, _polygoncentersA[i].Y - polarxy.Y);
+                _polarsidesPA[i] = getsides(_polygoncentersA[i]);
+            }
+
+            for (int i = 0; i < polygonnumB; i++)
+            {
+                _polaranglesPB[i] = getstartangle(_polygoncentersB[i].X - polarxy.X, _polygoncentersB[i].Y - polarxy.Y);
+                _polarsidesPB[i] = getsides(_polygoncentersB[i]);
+            }
+
             if (ssflag == false)
             {
                 ssflag = true;
                 timer1.Start();
+               
             }
             else
             {
                 ssflag = false;
                 timer1.Stop();
+               
             }
         }
+
+        //　ランダムな座標を返すファンクション
+        //　function which puts coordinates back
+
+        private Point xy(Random rand)
+        {
+            return new Point(rand.Next(50, pic.Width - 50), rand.Next(50, pic.Height - 50));
+        }
+
+        //　ランダムなベクターを返すファンクション
+        //　function which puts vectors back
 
         private vector velocity(Random rand)
         {
             return new vector(rand.Next(2, 10), rand.Next(2, 10));
         }
+
+        //　ランダムなPenカラーを返すファンクション
+        //　function which puts color of pen back
 
         private Pen pen(Random rand)
         {
@@ -809,34 +1029,68 @@ namespace obje002
 
         }
 
+        //　ランダムなSolidbrushを返すファンクション
+        //　function which puts Solid brushes back
+
         private SolidBrush solidbrush(Random rand)
         {
             return new SolidBrush(Color.FromArgb(rand.Next(150, 250), rand.Next(150, 250), rand.Next(150, 250)));
-
         }
 
+        //　北極星（画面の中心）と各図形の距離を返すファンクション
+        //　function which puts a distance between two points back
+
+        private float getsides(Point xy)
+        {
+            return (float)Math.Sqrt(Math.Pow((xy.X - polarxy.X), 2) + Math.Pow((xy.Y - polarxy.Y), 2));  
+        }
+
+        //　北極星（画面中心）を中心に回転する最初の位置角度を返すファンクション
+        //　function which puts angle from 0 of each objects back
+
+        private float getstartangle(float x, float y)
+        {
+            return (float)(Math.Atan2(y, x) * 180 / Math.PI);
+        }
+
+        // コンボボックス1はXの数を設定
+        // combobox1 is about number of Xs
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             xnum = Convert.ToInt32(comboBox1.SelectedItem);
             initializeXs();
         }
+
+        // コンボボックス2は多角形の数を設定
+        // combobox2 is about number of polygonsA
+       
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
             polygonnumA = Convert.ToInt32(comboBox2.SelectedItem);
             initializePolygonsA();
         }
 
+        // コンボボックス3は多角形の数を設定
+        // combobox3 is about number of polygonsB
+
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
             polygonnumB = Convert.ToInt32(comboBox3.SelectedItem);
             initializePolygonsB();
         }
+
+        // コンボボックス4は円の数を設定
+        // combobox4 is about number of Circles
+
         private void comboBox4_SelectedIndexChanged(object sender, EventArgs e)
         {
             circlenum = Convert.ToInt32(comboBox4.SelectedItem);
             initializeCircles();
         }
+
+        // コンボボックス5は多角形の頂点の数を設定
+        // combobox5 is about number of vertex of PolygonsA
 
         private void comboBox5_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -844,21 +1098,39 @@ namespace obje002
             initializePolygonsA();
         }
 
+        // コンボボックス6は多角形の頂点の数を設定
+        // combobox6 is about number of vertex of PolygonsB
+
         private void comboBox6_SelectedIndexChanged(object sender, EventArgs e)
         {
             vertexB = Convert.ToInt32(comboBox6.SelectedItem);
             initializePolygonsB();
         }
 
+        // form1のサイズが変更された時の設定
+        // setting up when form1 size changed
+
         private void Form1_SizeChanged(object sender, EventArgs e)
         {
             _bitmap = new Bitmap(pic.Width, pic.Height);
+            polarxy = new Point(pic.Width / 2, pic.Height / 2);
         }
 
-        
+        // コンボボックス7は各種動きの設定用
+        // combobox7 is for motion set up
+
         private void comboBox7_SelectedIndexChanged(object sender, EventArgs e)
         {
             motionnumber = comboBox7.SelectedIndex;
+            if (motionnumber == 5)
+            {
+                polarflag = true;
+            } else
+            {
+                polarflag = false;
+            }
         }
+
+
     }
 }
