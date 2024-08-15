@@ -1117,6 +1117,7 @@ namespace obje002
         }
 
         // コンボボックス7は各種動きの設定用
+
         // combobox7 is for motion set up
 
         private void comboBox7_SelectedIndexChanged(object sender, EventArgs e)
